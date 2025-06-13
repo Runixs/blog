@@ -8,6 +8,8 @@ import {
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
+import { Rate } from '@/components/rate';
+import posthog from 'posthog-js';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -49,4 +51,18 @@ export async function generateMetadata(props: {
     title: page.data.title,
     description: page.data.description,
   };
+}
+
+export default async function Page() {
+  return (
+    <DocsPage toc={toc} full={page.data.full}>
+      {/* at the bottom of page */}
+      <Rate
+        onRateAction={async (url, feedback) => {
+          'use server';
+          await posthog.capture('on_rate_docs', feedback);
+        }}
+      />
+    </DocsPage>
+  );
 }
